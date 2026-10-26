@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Motor IoT - semita.sv</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://jsdelivr.net" rel="stylesheet">
+    <!-- CSS de Bootstrap corregido y garantizado sin bloqueos -->
+    <link rel="stylesheet" href="https://jsdelivr.net">
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .navbar-barca { background-color: #004d98; color: #a50044; border-bottom: 5px solid #a50044; }
-        .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; background-color: #ffffff; }
         .btn-manual { width: 100%; margin-bottom: 10px; padding: 12px; font-weight: bold; }
         .integrante-img { width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 3px solid #004d98; }
         .badge-status { font-size: 1.2rem; padding: 10px 20px; }
@@ -19,7 +19,7 @@
 <body>
 
     <!-- Encabezado con temática solicitada -->
-    <nav class="navbar navbar-barca padding-3">
+    <nav class="navbar navbar-barca p-3">
         <div class="container d-flex justify-content-between align-items-center">
             <span class="navbar-brand mb-0 h1 text-white">semita.sv - Panel de Control IoT</span>
             <img src="https://wikimedia.org" alt="Escudo FC Barcelona" class="escudo-barca">
@@ -78,22 +78,18 @@
                 <div class="card card-custom p-4">
                     <h4 class="card-title border-bottom pb-2">Integrantes del Grupo</h4>
                     
-                    <!-- Integrante 1 -->
                     <div class="d-flex align-items-center mb-3">
                         <img src="https://placeholder.com" alt="Integrante 1" class="integrante-img me-3">
                         <div><strong>Apellido1, Nombre1</strong><br><small class="text-muted">Desarrollador</small></div>
                     </div>
-                    <!-- Integrante 2 -->
                     <div class="d-flex align-items-center mb-3">
                         <img src="https://placeholder.com" alt="Integrante 2" class="integrante-img me-3">
                         <div><strong>Apellido2, Nombre2</strong><br><small class="text-muted">Desarrollador</small></div>
                     </div>
-                    <!-- Integrante 3 -->
                     <div class="d-flex align-items-center mb-3">
                         <img src="https://placeholder.com" alt="Integrante 3" class="integrante-img me-3">
                         <div><strong>Apellido3, Nombre3</strong><br><small class="text-muted">Desarrollador</small></div>
                     </div>
-                    <!-- Integrante 4 -->
                     <div class="d-flex align-items-center mb-3">
                         <img src="https://placeholder.com" alt="Integrante 4" class="integrante-img me-3">
                         <div><strong>Apellido4, Nombre4</strong><br><small class="text-muted">Desarrollador</small></div>
@@ -105,32 +101,28 @@
         </div>
     </div>
 
-    <!-- JavaScript Lógica de Comunicación con la API -->
     <script>
-        // ¡IMPORTANTE!: Reemplaza esto con la URL de tu app en Render una vez publicada.
+        // URL de tu API REST real en Render
         const API_URL = "  https://mi-proyecto-iot.onrender.com"; 
 
-        // Función para consultar continuamente el estado del backend (Polling de alta velocidad)
+
         async function actualizarPantalla() {
             try {
                 const res = await fetch(`${API_URL}/estado`);
                 const data = await res.json();
 
-                // Actualizar interfaz con datos de la API
                 document.getElementById('txt-distancia').innerText = `${data.distancia} cm`;
                 document.getElementById('txt-motor').innerText = data.motorEstado.toUpperCase();
                 document.getElementById('txt-modo-actual').innerText = data.modo.toUpperCase();
 
-                // Actualizar estilos visuales según estados
                 const panelManual = document.getElementById('panel-manual');
                 const btnManual = document.getElementById('btn-modo-manual');
                 const btnAuto = document.getElementById('btn-modo-auto');
                 const badgeMotor = document.getElementById('txt-motor');
 
-                // Manejo visual de los botones del motor e indicador de modo
                 if (data.modo === 'automatico') {
                     panelManual.style.opacity = "0.4";
-                    panelManual.style.pointerEvents = "none"; // Deshabilita clics en modo auto
+                    panelManual.style.pointerEvents = "none";
                     btnAuto.className = "btn btn-success btn-lg";
                     btnManual.className = "btn btn-outline-primary btn-lg";
                 } else {
@@ -140,7 +132,6 @@
                     btnManual.className = "btn btn-primary btn-lg";
                 }
 
-                // Cambiar color del badge del motor según su giro
                 if (data.motorEstado === 'derecha') badgeMotor.className = "badge bg-success badge-status";
                 else if (data.motorEstado === 'izquierda') badgeMotor.className = "badge bg-warning text-dark badge-status";
                 else badgeMotor.className = "badge bg-danger badge-status";
@@ -150,7 +141,6 @@
             }
         }
 
-        // Función para alternar entre Modo Manual y Automático
         async function cambiarModo(nuevoModo) {
             try {
                 await fetch(`${API_URL}/comando`, {
@@ -162,7 +152,6 @@
             } catch (err) { console.error(err); }
         }
 
-        // Función para enviar giros en Modo Manual
         async function enviarComandoMotor(accion) {
             try {
                 await fetch(`${API_URL}/comando`, {
@@ -174,7 +163,6 @@
             } catch (err) { console.error(err); }
         }
 
-        // Ejecutar actualización constante cada 1 segundo
         setInterval(actualizarPantalla, 1000);
         actualizarPantalla();
     </script>
