@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Motor IoT - semita.sv</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://jsdelivr.net" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-barca { background-color: #004d98; color: #a50044; border-bottom: 5px solid #a50044; }
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .btn-manual { width: 100%; margin-bottom: 10px; padding: 12px; font-weight: bold; }
+        .integrante-img { width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 3px solid #004d98; }
+        .badge-status { font-size: 1.2rem; padding: 10px 20px; }
+        .escudo-barca { max-width: 60px; }
+    </style>
+</head>
+<body>
+
+    <!-- Encabezado con temática solicitada -->
+    <nav class="navbar navbar-barca padding-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span class="navbar-brand mb-0 h1 text-white">semita.sv - Panel de Control IoT</span>
+            <img src="https://wikimedia.org" alt="Escudo FC Barcelona" class="escudo-barca">
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row">
+            
+            <!-- Columna Control y Monitoreo -->
+            <div class="col-md-8">
+                <!-- Estado del Sistema -->
+                <div class="card card-custom p-4">
+                    <h3 class="card-title border-bottom pb-2">Monitoreo en Tiempo Real</h3>
+                    <div class="row text-center my-3">
+                        <div class="col-6">
+                            <h5>Distancia Detectada</h5>
+                            <span id="txt-distancia" class="badge bg-dark badge-status">0 cm</span>
+                        </div>
+                        <div class="col-6">
+                            <h5>Estado del Motor</h5>
+                            <span id="txt-motor" class="badge bg-secondary badge-status">DETENIDO</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selección de Modo -->
+                <div class="card card-custom p-4">
+                    <h3 class="card-title border-bottom pb-2">Modo de Operación</h3>
+                    <div class="d-flex gap-3 justify-content-center my-3">
+                        <button id="btn-modo-manual" class="btn btn-primary btn-lg" onclick="cambiarModo('manual')">Modo Manual</button>
+                        <button id="btn-modo-auto" class="btn btn-outline-success btn-lg" onclick="cambiarModo('automatico')">Modo Automático</button>
+                    </div>
+                    <p class="text-center text-muted">Modo actual seleccionado: <strong id="txt-modo-actual" class="text-primary">MANUAL</strong></p>
+                </div>
+
+                <!-- Botones de Control Manual -->
+                <div id="panel-manual" class="card card-custom p-4">
+                    <h3 class="card-title border-bottom pb-2">Control Manual de Movimiento</h3>
+                    <div class="row mt-3">
+                        <div class="col-4">
+                            <button class="btn btn-outline-primary btn-manual" onclick="enviarComandoMotor('izquierda')">◀ Girar Izquierda</button>
+                        </div>
+                        <div class="col-4">
+                            <button class="btn btn-danger btn-manual" onclick="enviarComandoMotor('detenido')">⏹ Detener Motor</button>
+                        </div>
+                        <div class="col-4">
+                            <button class="btn btn-outline-primary btn-manual" onclick="enviarComandoMotor('derecha')">Girar Derecha ▶</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Integrantes del Grupo -->
+            <div class="col-md-4">
+                <div class="card card-custom p-4">
+                    <h4 class="card-title border-bottom pb-2">Integrantes del Grupo</h4>
+                    
+                    <!-- Integrante 1 -->
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://placeholder.com" alt="Integrante 1" class="integrante-img me-3">
+                        <div><strong>Apellido1, Nombre1</strong><br><small class="text-muted">Desarrollador</small></div>
+                    </div>
+                    <!-- Integrante 2 -->
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://placeholder.com" alt="Integrante 2" class="integrante-img me-3">
+                        <div><strong>Apellido2, Nombre2</strong><br><small class="text-muted">Desarrollador</small></div>
+                    </div>
+                    <!-- Integrante 3 -->
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://placeholder.com" alt="Integrante 3" class="integrante-img me-3">
+                        <div><strong>Apellido3, Nombre3</strong><br><small class="text-muted">Desarrollador</small></div>
+                    </div>
+                    <!-- Integrante 4 -->
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://placeholder.com" alt="Integrante 4" class="integrante-img me-3">
+                        <div><strong>Apellido4, Nombre4</strong><br><small class="text-muted">Desarrollador</small></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Lógica de Comunicación con la API -->
+    <script>
+        // ¡IMPORTANTE!: Reemplaza esto con la URL de tu app en Render una vez publicada.
+        const API_URL = "https://onrender.com"; 
+
+        // Función para consultar continuamente el estado del backend (Polling de alta velocidad)
+        async function actualizarPantalla() {
+            try {
+                const res = await fetch(`${API_URL}/estado`);
+                const data = await res.json();
+
+                // Actualizar interfaz con datos de la API
+                document.getElementById('txt-distancia').innerText = `${data.distancia} cm`;
+                document.getElementById('txt-motor').innerText = data.motorEstado.toUpperCase();
+                document.getElementById('txt-modo-actual').innerText = data.modo.toUpperCase();
+
+                // Actualizar estilos visuales según estados
+                const panelManual = document.getElementById('panel-manual');
+                const btnManual = document.getElementById('btn-modo-manual');
+                const btnAuto = document.getElementById('btn-modo-auto');
+                const badgeMotor = document.getElementById('txt-motor');
+
+                // Manejo visual de los botones del motor e indicador de modo
+                if (data.modo === 'automatico') {
+                    panelManual.style.opacity = "0.4";
+                    panelManual.style.pointerEvents = "none"; // Deshabilita clics en modo auto
+                    btnAuto.className = "btn btn-success btn-lg";
+                    btnManual.className = "btn btn-outline-primary btn-lg";
+                } else {
+                    panelManual.style.opacity = "1";
+                    panelManual.style.pointerEvents = "auto";
+                    btnAuto.className = "btn btn-outline-success btn-lg";
+                    btnManual.className = "btn btn-primary btn-lg";
+                }
+
+                // Cambiar color del badge del motor según su giro
+                if (data.motorEstado === 'derecha') badgeMotor.className = "badge bg-success badge-status";
+                else if (data.motorEstado === 'izquierda') badgeMotor.className = "badge bg-warning text-dark badge-status";
+                else badgeMotor.className = "badge bg-danger badge-status";
+
+            } catch (err) {
+                console.error("Error conectando con la API REST:", err);
+            }
+        }
+
+        // Función para alternar entre Modo Manual y Automático
+        async function cambiarModo(nuevoModo) {
+            try {
+                await fetch(`${API_URL}/comando`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ modo: nuevoModo })
+                });
+                actualizarPantalla();
+            } catch (err) { console.error(err); }
+        }
+
+        // Función para enviar giros en Modo Manual
+        async function enviarComandoMotor(accion) {
+            try {
+                await fetch(`${API_URL}/comando`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ motorEstado: accion })
+                });
+                actualizarPantalla();
+            } catch (err) { console.error(err); }
+        }
+
+        // Ejecutar actualización constante cada 1 segundo
+        setInterval(actualizarPantalla, 1000);
+        actualizarPantalla();
+    </script>
+</body>
+</html>
